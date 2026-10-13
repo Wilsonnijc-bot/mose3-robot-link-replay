@@ -1,9 +1,11 @@
-/* Signal replay, the landing page (index.html?case=<id>&signal=<key>): each tracked point coloured by its own
+/* Error-signal replay (signals.html?case=<id>&signal=<key>): each tracked point coloured by its own
    per-frame value of a link signal, with the per-frame series below and every video indexed. */
 (() => {
   'use strict';
   const M = window.MOSE3_3D, INDEX = window.MOSE3_INDEX;
-  const RAMP = ['#004939', '#00614b', '#00795e', '#009172', '#20a888', '#4fbe9f', '#7ad3b7', '#a6e6d1', '#d1f9eb'];
+  // White (rigid) to red (more error); lightness falls steadily, and the red end stays visible on black.
+  const RAMP = ['#fdf9f9', '#ffdfda', '#ffc7bf', '#ffafa5', '#ff988c', '#fa8074', '#f3665c', '#ea4b43', '#e02628'];
+  const RING = [0.557, 0.643, 0.749], MARKER = [0.31, 0.82, 0.91];      // steel-blue predictions, cyan selection
   const UNSCORED = [0.24, 0.255, 0.28], TRAIL = 12, MISSING = 65535;
   const LABEL = {1: 'severe', 0.5: 'moderate', 0: 'none'};
   const $ = s => document.querySelector(s);
@@ -17,7 +19,7 @@
   const fmt = v => v === null || v === undefined || !Number.isFinite(v) ? '—' : (Math.abs(v) >= 10 ? v.toFixed(1) : v.toFixed(3));
   const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 
-  /* ---- colour: one hue, dark (near zero, recedes into the canvas) to light ---- */
+  /* ---- colour: one red hue, white (near zero) to red (large error) ---- */
   const rampRgb = RAMP.map(h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16) / 255));
   function ramp(fraction, out, offset) {
     const x = Math.min(Math.max(fraction, 0), 1) * (rampRgb.length - 1), i = Math.min(Math.floor(x), rampRgb.length - 2), f = x - i;
@@ -108,7 +110,7 @@
             lp.array[lineCount * 6 + 3 + k] = hp[(shown - 1) * 3 + k];
             lc.array[lineCount * 6 + k] = lc.array[lineCount * 6 + 3 + k] = color[k];
           }
-          rc.set([0.86, 0.88, 0.9], ringCount * 3);
+          rc.set(RING, ringCount * 3);
           ringCount++; lineCount++;
         }
         if (showTrails) {
@@ -154,7 +156,7 @@
     const {key, n} = state.selected, link = current.scene.links[key], block = current.signals[key];
     const values = block.signals[state.signal].values;
     M.lifted(link, frame, n, link.trajectory, marker.geometry.getAttribute('position').array, 0, current.lift);
-    marker.geometry.getAttribute('color').array.set([1, 1, 1]);
+    marker.geometry.getAttribute('color').array.set(MARKER);
     marker.geometry.getAttribute('position').needsUpdate = marker.geometry.getAttribute('color').needsUpdate = true;
     let top = -Infinity, at = null;
     for (let t = 1; t < current.frames; t++) {
@@ -281,10 +283,10 @@
   });
   function signalChanged() {
     const s = info();
-    $('#snote').textContent = s.note;
+    $('#snote').innerHTML = `${s.note} <a class="howlink" href="#about-${s.key}">How it is measured</a>`;
     $('#predictionlabel').style.opacity = s.residual ? '' : '0.45';
     $('#predictionlabel').querySelector('input').disabled = !s.residual;
-    $('#aurocline').innerHTML = `${s.label}, maximum over the clip: AUROC <b>${s.auroc.link2.toFixed(2)}</b> on Link2 and `
+    $('#aurocline').innerHTML = `Error signal: ${s.label}, maximum over the clip. AUROC <b>${s.auroc.link2.toFixed(2)}</b> on Link2 and `
       + `<b>${s.auroc.link5.toFixed(2)}</b> on Link5 (severe vs none, moderate excluded).`;
     history.replaceState(null, '', `?case=${encodeURIComponent(state.name)}&signal=${state.signal}`);
     colorkey();
@@ -347,7 +349,7 @@
     $('#videolink').href = `video.html?case=${encodeURIComponent(name)}`;
     $('#facts').innerHTML = [`<b>${entry.frames}</b> frames`,
       ...['link2', 'link5'].map(l => `${l}: <b>${LABEL[entry.labels[l]] ?? 'no label'}</b>`)].map(t => `<li>${t}</li>`).join('');
-    document.title = `${name} · MoSE3 signal replay`;
+    document.title = `${name} · MoSE3 error-signal replay`;
     try {
       const [sceneHeader, sceneData] = await M.loadScript(`cases/${name}.js`, 'MOSE3_SCENE');
       const scene = M.decodeScene(sceneHeader, sceneData);
@@ -369,6 +371,11 @@
       chart();
     }
     clock.redraw();
+  });
+  // "How it is measured" opens that signal's explanation before scrolling to it.
+  $('#snote').addEventListener('click', e => {
+    const link = e.target.closest('a.howlink');
+    if (link) document.querySelector(link.getAttribute('href')).open = true;
   });
   document.querySelectorAll('[data-auroc]').forEach(node => {
     const [key, link] = node.dataset.auroc.split(':');

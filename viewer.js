@@ -242,7 +242,7 @@
     const step = d => complete[(position + d + complete.length) % complete.length].case;
     $('#prevcase').href = `video.html?case=${encodeURIComponent(step(-1))}`;
     $('#nextcase').href = `video.html?case=${encodeURIComponent(step(1))}`;
-    $('#signalslink').href = `index.html?case=${encodeURIComponent(name)}`;
+    $('#signalslink').href = `signals.html?case=${encodeURIComponent(name)}`;
     document.title = `${name} · MoSE3 replay`;
     $('#title').textContent = name;
     $('#facts').innerHTML = [`<b>${entry.frames}</b> frames at ${entry.fps.toFixed(0)} fps`,

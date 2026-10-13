@@ -3,18 +3,18 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>MoSE3 on robot links · all videos</title>
+<title>MoSE3 tracking + SE(3) replay</title>
 <link rel="stylesheet" href="site.css">
 </head>
 <body>
 <nav class="top"><div class="wrap">
   <a class="brand" href="index.html">MoSE3 <span>· PDI points</span></a>
-  <div class="navlinks"><a href="index.html">Signals</a><a href="videos.html" aria-current="page">Videos</a><a href="#table">Scores</a><a href="#method">Method</a></div>
+  <div class="navlinks"><a href="signals.html">Error signals</a><a href="videos.html" aria-current="page">Tracking + SE(3)</a><a href="#table">Scores</a><a href="#method">Method</a></div>
 </div></nav>
 
 <main>
   <header class="hero"><div class="wrap">
-    <h1>MoSE3 on robot links</h1>
+    <h1>Tracking + SE(3) replay</h1>
     <p class="lede">World-space 3D tracks, per-point SE(3) and rigidity embeddings for the points PDI's
       CoTracker initialization picks on Link2 and Link5, in every selected video. Pick a view, then open
       a video for its interactive 3D replay.</p>
@@ -68,7 +68,7 @@
 <footer class="site"><div class="wrap">Tracks, per-point SE(3) and rigidity embeddings from
   <a href="https://mose3-tracker.github.io/">MoSE3</a> (Cheng et al., NeurIPS 2026); its weights include π³ and are
   CC BY-NC 4.0, so this replay is for non-commercial research. Points come from PDI's CoTracker initialization.
-  The signals are diagnostics, not validated deformation detectors.</div></footer>
+  The error signals are diagnostics, not validated deformation detectors.</div></footer>
 <script src="data.js"></script>
 <script src="videos.js"></script>
 </body>

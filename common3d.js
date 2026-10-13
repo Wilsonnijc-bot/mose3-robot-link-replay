@@ -1,4 +1,4 @@
-/* Shared by video.html and index.html (the signal replay): packed-array decoding, on-demand scripts,
+/* Shared by video.html and signals.html (the error-signal replay): packed-array decoding, on-demand scripts,
    the three.js stage (first-camera framing, round points, fat lines) and the page clock
    that keeps the input video on the same time. Coordinates are the first camera's
    (x right, y down, z forward). */

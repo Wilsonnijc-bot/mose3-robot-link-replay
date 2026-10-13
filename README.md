@@ -1,4 +1,4 @@
-# MoSE3 on robot links: signal replay
+# MoSE3 on robot links: error-signal and tracking replays
 
 Interactive replay of [MoSE3](https://mose3-tracker.github.io/) (Cheng et al., NeurIPS 2026) applied to the
 points PDI's CoTracker initialization picks on robot Link2 (256 points) and Link5 (100 points), in 45 generated
@@ -6,10 +6,11 @@ robot videos (COSMOS2.5, COSMOS3, LVP).
 
 **Site:** https://wilsonnijc-bot.github.io/mose3-robot-link-replay/
 
-- `index.html` — signal replay (landing page): each point coloured by its own rigid residual (MoSE3 SE(3)
-  or visible-points refit) or rigidity discrepancy, per frame; per-frame chart; index of all videos with labels;
-  method notes on how the two residuals differ.
-- `videos.html` — gallery of all videos in seven 2D views (input, tracks, camera-fixed tracks, SE(3),
+- `index.html` — first page: choose the error-signal replay or the tracking + SE(3) replay, with a preview of each.
+- `signals.html` — error-signal replay: each point coloured by its own error per frame (white is rigid, redder is
+  more error) for the rigid residual (MoSE3 SE(3)), the visible-points refit, or the rigidity discrepancy; per-frame
+  chart; index of all videos with labels; expandable explanations of how each signal is derived and measured.
+- `videos.html` — tracking + SE(3) gallery of all videos in seven 2D views (input, tracks, camera-fixed tracks, SE(3),
   tracking + SE(3), rigidity embedding, frames over the embedding).
 - `video.html?case=<id>` — per-video 3D replay with point inspector.
 
@@ -19,4 +20,4 @@ view videos are re-encoded (H.264, CRF 28) for size, with frame counts checked. 
 16 bits for display only.
 
 MoSE3's weights include π³ and are CC BY-NC 4.0: this replay is for non-commercial research. three.js r147 is MIT
-(`assets/LICENSE`). The signals are diagnostics, not validated deformation detectors.
+(`assets/LICENSE`). The error signals are diagnostics, not validated deformation detectors.
