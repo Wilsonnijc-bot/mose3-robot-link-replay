@@ -10,7 +10,7 @@
 <body>
 <nav class="top"><div class="wrap">
   <a class="brand" href="index.html">MoSE3 <span>· PDI points</span></a>
-  <div class="navlinks"><a href="signals.html" aria-current="page">Error signals</a><a href="videos.html">Tracking + SE(3)</a><a href="#signals">How each is measured</a><a href="#index">All videos</a></div>
+  <div class="navlinks"><a href="signals.html" aria-current="page">Error signals</a><a href="videos.html">Tracking + SE(3)</a><a class="minor" href="#signals">How each is measured</a><a class="minor" href="#index">All videos</a></div>
   <div class="stepper"><a id="videolink" href="#">3D replay of this video &#8250;</a></div>
 </div></nav>
 
@@ -26,6 +26,7 @@
     <div class="sighead"><h2 id="title">Loading…</h2><ul class="facts" id="facts"></ul></div>
     <div class="segwrap"><div class="seg" id="signal" role="group" aria-label="Error signal"></div></div>
     <p class="vnote" id="snote"></p>
+    <div class="howwrap"><button class="howbutton" id="howbutton" type="button"></button></div>
     <div class="panel">
       <div class="viewer" id="viewer">
         <canvas id="scene" aria-label="Interactive 3D error-signal replay"></canvas>

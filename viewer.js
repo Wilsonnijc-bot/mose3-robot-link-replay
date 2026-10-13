@@ -191,14 +191,14 @@
     sparkCanvas.width = width * ratio; sparkCanvas.height = height * ratio;
     const g = sparkCanvas.getContext('2d');
     g.scale(ratio, ratio);
-    const pad = {l: 56, r: 8, t: 8, b: 18}, frames = current.data.header.frames;
+    const pad = {l: 66, r: 8, t: 10, b: 22}, frames = current.data.header.frames;
     const series = Object.entries(current.data.header.links).map(([key, link]) => [key, chosen(link).series[metric.value]]);
     const values = series.flatMap(([, s]) => s).filter(v => v !== null && Number.isFinite(v));
     const top = Math.max(...values, 1e-9);
     const x = i => pad.l + (i / Math.max(frames - 1, 1)) * (width - pad.l - pad.r);
     const y = v => height - pad.b - (v / top) * (height - pad.t - pad.b);
     const ink = getComputedStyle(document.documentElement).getPropertyValue('--faint').trim() || '#8a9099';
-    g.font = '11px ui-monospace, Menlo, monospace'; g.fillStyle = ink; g.strokeStyle = 'rgba(128,132,140,.25)';
+    g.font = '13px ui-monospace, Menlo, monospace'; g.fillStyle = ink; g.strokeStyle = 'rgba(128,132,140,.25)';
     g.beginPath(); g.moveTo(pad.l, y(0)); g.lineTo(width - pad.r, y(0)); g.moveTo(pad.l, y(top)); g.lineTo(width - pad.r, y(top)); g.stroke();
     g.textAlign = 'right'; g.fillText(format(top), pad.l - 6, y(top) + 4); g.fillText('0', pad.l - 6, y(0) + 4);
     g.textAlign = 'left'; g.fillText('frame 0', pad.l, height - 4);

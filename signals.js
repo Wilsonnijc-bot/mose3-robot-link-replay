@@ -200,7 +200,7 @@
   function chart() {
     if (!current) return;
     svg.innerHTML = '';
-    const width = svg.clientWidth || 800, height = 210, pad = {l: 52, r: 64, t: 18, b: 26}, frames = current.frames;
+    const width = svg.clientWidth || 800, height = 250, pad = {l: 64, r: 84, t: 24, b: 32}, frames = current.frames;
     svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
     const series = chartSeries();
     const finite = series.flatMap(s => s.values).filter(v => v !== null && Number.isFinite(v));
@@ -210,10 +210,10 @@
     geometry = {x, y, pad, width, height, frames, series};
     for (const v of [0, top / 2, top]) {
       el('line', {x1: pad.l, x2: width - pad.r, y1: y(v), y2: y(v), class: 'grid'});
-      el('text', {x: pad.l - 8, y: y(v) + 4, class: 'tick', 'text-anchor': 'end'}).textContent = fmt(v);
+      el('text', {x: pad.l - 10, y: y(v) + 5, class: 'tick', 'text-anchor': 'end'}).textContent = fmt(v);
     }
     for (const f of [0, Math.round((frames - 1) / 2), frames - 1]) {
-      el('text', {x: x(f), y: height - 8, class: 'tick', 'text-anchor': f === 0 ? 'start' : f === frames - 1 ? 'end' : 'middle'}).textContent = `frame ${f}`;
+      el('text', {x: x(f), y: height - 9, class: 'tick', 'text-anchor': f === 0 ? 'start' : f === frames - 1 ? 'end' : 'middle'}).textContent = `frame ${f}`;
     }
     for (const s of series) {
       let d = '', pen = false;
@@ -223,13 +223,13 @@
       });
       el('path', {d, class: s.point === undefined ? `series ${s.key}` : 'series point'});
       const last = s.values.map((v, i) => [v, i]).filter(([v]) => v !== null && Number.isFinite(v)).pop();
-      if (last) el('text', {x: x(last[1]) + 6, y: y(last[0]) + 4, class: 'direct'}).textContent = s.point === undefined ? s.key : `point ${s.point}`;
+      if (last) el('text', {x: x(last[1]) + 8, y: y(last[0]) + 5, class: 'direct'}).textContent = s.point === undefined ? s.key : `point ${s.point}`;
     }
     for (const s of series.filter(s => s.point === undefined && s.maxFrame !== null && s.maxFrame !== undefined)) {
-      el('circle', {cx: x(s.maxFrame), cy: y(s.max), r: 4.5, class: `maxdot ${s.key}`});
+      el('circle', {cx: x(s.maxFrame), cy: y(s.max), r: 5, class: `maxdot ${s.key}`});
       // Near the right edge the label goes left of the dot, clear of the line-end labels.
       const late = s.maxFrame > 0.8 * (frames - 1);
-      el('text', {x: x(s.maxFrame) + (late ? -8 : 0), y: y(s.max) - 9, class: 'maxlabel',
+      el('text', {x: x(s.maxFrame) + (late ? -10 : 0), y: y(s.max) - 11, class: 'maxlabel',
                   'text-anchor': late ? 'end' : 'middle'}).textContent = `max ${fmt(s.max)}`;
     }
     geometry.cursor = el('line', {x1: 0, x2: 0, y1: pad.t, y2: height - pad.b, class: 'cursor'});
@@ -283,7 +283,8 @@
   });
   function signalChanged() {
     const s = info();
-    $('#snote').innerHTML = `${s.note} <a class="howlink" href="#about-${s.key}">How it is measured</a>`;
+    $('#snote').textContent = s.note;
+    $('#howbutton').innerHTML = `How is the ${s.label.toLowerCase()} measured? <span aria-hidden="true">↓</span>`;
     $('#predictionlabel').style.opacity = s.residual ? '' : '0.45';
     $('#predictionlabel').querySelector('input').disabled = !s.residual;
     $('#aurocline').innerHTML = `Error signal: ${s.label}, maximum over the clip. AUROC <b>${s.auroc.link2.toFixed(2)}</b> on Link2 and `
@@ -372,10 +373,11 @@
     }
     clock.redraw();
   });
-  // "How it is measured" opens that signal's explanation before scrolling to it.
-  $('#snote').addEventListener('click', e => {
-    const link = e.target.closest('a.howlink');
-    if (link) document.querySelector(link.getAttribute('href')).open = true;
+  // The button opens the selected signal's explanation, then scrolls to it.
+  $('#howbutton').addEventListener('click', () => {
+    const section = document.querySelector(`#about-${state.signal}`);
+    section.open = true;
+    section.scrollIntoView({behavior: 'smooth', block: 'start'});
   });
   document.querySelectorAll('[data-auroc]').forEach(node => {
     const [key, link] = node.dataset.auroc.split(':');
