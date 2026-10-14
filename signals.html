@@ -17,9 +17,10 @@
 <main>
   <header class="hero"><div class="wrap">
     <h1>Error-signal replay</h1>
-    <p class="lede">Every tracked point is coloured by its own error at the current frame: white is rigid, redder is more
-      error. For the rigid residuals, blue rings mark where the rigid motion puts each point and a line joins it to where
-      the point went.</p>
+    <p class="lede">Each <b>small dot</b> is a tracked point, coloured by its own error at the current frame: white is
+      rigid, redder is more error. For the rigid residuals, each <b>large blue ring</b> is that point's rigid prediction,
+      where a rigid motion of its link would put it, and a line joins the ring to the dot. A dot inside its ring is moving
+      rigidly. The legend on the replay names every mark.</p>
   </div></header>
 
   <section id="replay"><div class="wrap">
@@ -50,6 +51,7 @@
           <span class="ptime" id="time">0.0 / 0.0 s</span>
         </div>
       </div>
+      <ul class="markkey" id="markkey" aria-label="What the marks on the replay mean"></ul>
       <div class="chartwrap">
         <div class="charthead"><div class="serieskey" id="serieskey"></div>
           <div class="jumps" id="jumps"></div></div>

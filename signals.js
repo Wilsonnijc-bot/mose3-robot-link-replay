@@ -25,12 +25,29 @@
     const x = Math.min(Math.max(fraction, 0), 1) * (rampRgb.length - 1), i = Math.min(Math.floor(x), rampRgb.length - 2), f = x - i;
     for (let k = 0; k < 3; k++) out[offset + k] = rampRgb[i][k] * (1 - f) + rampRgb[i + 1][k] * f;
   }
+  // The legend explains every mark drawn on the canvas, using the same colours.
+  const toCss = rgb => `rgb(${rgb.map(v => Math.round(255 * v)).join(',')})`;
+  const ICON = {
+    ring: `<svg viewBox="0 0 22 22" aria-hidden="true"><circle cx="11" cy="11" r="8" fill="none" stroke="${toCss(RING)}" stroke-width="2.4"/></svg>`,
+    dot: `<svg viewBox="0 0 22 22" aria-hidden="true"><circle cx="11" cy="11" r="4.5" fill="${RAMP[6]}"/></svg>`,
+    line: `<svg viewBox="0 0 22 22" aria-hidden="true"><line x1="2" y1="11" x2="20" y2="11" stroke="${RAMP[6]}" stroke-width="2.4"/></svg>`,
+    gray: `<svg viewBox="0 0 22 22" aria-hidden="true"><circle cx="11" cy="11" r="4.5" fill="#3d4148"/></svg>`,
+    selected: `<svg viewBox="0 0 22 22" aria-hidden="true"><circle cx="11" cy="11" r="8" fill="none" stroke="${toCss(MARKER)}" stroke-width="2.4"/></svg>`,
+  };
   function colorkey() {
     const s = info();
+    const rows = [
+      ...(s.residual ? [['ring', '<b>Large ring</b>: the rigid prediction, where a rigid motion puts the point']] : []),
+      ['dot', `<b>Small dot</b>: the tracked point, where MoSE3 says it went, coloured by its error`],
+      ...(s.residual ? [['line', '<b>Line</b>: the residual, from prediction to tracked point']] : []),
+      ['gray', '<b>Grey dot</b>: not scored at this frame'],
+      ...(state.selected ? [['selected', '<b>Cyan ring</b>: the point you clicked']] : []),
+    ];
+    // Colour scale on the canvas; the marks are explained in a row under it, so no points are covered.
     $('#colorkey').innerHTML = `<div class="ckey-title">${s.label} <span>(${s.unit})</span></div>`
       + `<div class="ckey-bar" style="background:linear-gradient(90deg,${RAMP.join(',')})"></div>`
-      + `<div class="ckey-ticks"><span>0</span><span>${fmt(s.scale / 2)}</span><span>≥ ${fmt(s.scale)}</span></div>`
-      + `<div class="ckey-none"><i></i>not scored at this frame</div>`;
+      + `<div class="ckey-ticks"><span>0 · rigid</span><span>${fmt(s.scale / 2)}</span><span>≥ ${fmt(s.scale)} · error</span></div>`;
+    $('#markkey').innerHTML = rows.map(([icon, text]) => `<li><i class="tile">${ICON[icon]}</i><span>${text}</span></li>`).join('');
   }
 
   /* ---- stage ---- */
@@ -145,6 +162,7 @@
   M.picker(canvas, stage.camera, () => current && current.heads, () => current.pickRadius, index => {
     const [key, n] = current.drawn[index];
     state.selected = {key, n};
+    colorkey();
     chart();
     clock.redraw();
   });
@@ -173,9 +191,9 @@
       + `<dt>Query pixel</dt><dd>${link.queryXy[2 * n].toFixed(1)}, ${link.queryXy[2 * n + 1].toFixed(1)}</dd></dl>`;
   }
   $('#inspector').addEventListener('click', e => {
-    if (e.target.id === 'unselect') { state.selected = null; chart(); clock.redraw(); }
+    if (e.target.id === 'unselect') { state.selected = null; colorkey(); chart(); clock.redraw(); }
   });
-  addEventListener('keydown', e => { if (e.key === 'Escape' && state.selected) { state.selected = null; chart(); clock.redraw(); } });
+  addEventListener('keydown', e => { if (e.key === 'Escape' && state.selected) { state.selected = null; colorkey(); chart(); clock.redraw(); } });
 
   /* ---- per-frame chart (one axis: the selected signal) ---- */
   const svg = $('#chart'), tip = $('#tip'), NS = 'http://www.w3.org/2000/svg';
@@ -215,6 +233,7 @@
     for (const f of [0, Math.round((frames - 1) / 2), frames - 1]) {
       el('text', {x: x(f), y: height - 9, class: 'tick', 'text-anchor': f === 0 ? 'start' : f === frames - 1 ? 'end' : 'middle'}).textContent = `frame ${f}`;
     }
+    const ends = [];
     for (const s of series) {
       let d = '', pen = false;
       s.values.forEach((v, i) => {
@@ -223,8 +242,13 @@
       });
       el('path', {d, class: s.point === undefined ? `series ${s.key}` : 'series point'});
       const last = s.values.map((v, i) => [v, i]).filter(([v]) => v !== null && Number.isFinite(v)).pop();
-      if (last) el('text', {x: x(last[1]) + 8, y: y(last[0]) + 5, class: 'direct'}).textContent = s.point === undefined ? s.key : `point ${s.point}`;
+      if (last) ends.push({x: x(last[1]) + 8, y: y(last[0]) + 5, text: s.point === undefined ? s.key : `point ${s.point}`});
     }
+    // Line-end labels: keep at least one line of text apart, top to bottom.
+    ends.sort((a, b) => a.y - b.y).forEach((label, i) => {
+      if (i && label.y - ends[i - 1].y < 16) label.y = ends[i - 1].y + 16;
+      el('text', {x: label.x, y: label.y, class: 'direct'}).textContent = label.text;
+    });
     for (const s of series.filter(s => s.point === undefined && s.maxFrame !== null && s.maxFrame !== undefined)) {
       el('circle', {cx: x(s.maxFrame), cy: y(s.max), r: 5, class: `maxdot ${s.key}`});
       // Near the right edge the label goes left of the dot, clear of the line-end labels.
