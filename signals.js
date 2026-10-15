@@ -312,7 +312,8 @@
     $('#predictionlabel').style.opacity = s.residual ? '' : '0.45';
     $('#predictionlabel').querySelector('input').disabled = !s.residual;
     $('#aurocline').innerHTML = `Error signal: ${s.label}, maximum over the clip. AUROC <b>${s.auroc.link2.toFixed(2)}</b> on Link2 and `
-      + `<b>${s.auroc.link5.toFixed(2)}</b> on Link5 (severe vs none, moderate excluded).`;
+      + `<b>${s.auroc.link5.toFixed(2)}</b> on Link5 (severe vs none, moderate excluded). Keeping moderate as the middle `
+      + `level, the C-index is ${s.ordinal.link2.toFixed(2)} and ${s.ordinal.link5.toFixed(2)}.`;
     history.replaceState(null, '', `?case=${encodeURIComponent(state.name)}&signal=${state.signal}`);
     colorkey();
     table();
@@ -404,8 +405,8 @@
     section.scrollIntoView({behavior: 'smooth', block: 'start'});
   });
   document.querySelectorAll('[data-auroc]').forEach(node => {
-    const [key, link] = node.dataset.auroc.split(':');
-    node.textContent = INDEX.signals.find(s => s.key === key).auroc[link].toFixed(2);
+    const [key, link, kind] = node.dataset.auroc.split(':'), s = INDEX.signals.find(s => s.key === key);
+    node.textContent = (kind === 'ordinal' ? s.ordinal : s.auroc)[link].toFixed(2);
   });
   clock.start();
   load(state.name);
